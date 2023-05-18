@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -24,25 +24,41 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
+    // Connect the client to the server (optional starting in v4.7)
     await client.connect();
 
     const toysCollection = client.db("toyVillage").collection("allToys");
 
-    // Get all toys from database
-    app.get("/allToys", async (req, res) => {
+    const indexKeys = { name: 1 };
+    const indexOptions = { name: "name" };
+    const result = await toysCollection.createIndex(indexKeys, indexOptions);
+
+    // Get all toys from the database
+    app.get("/toys", async (req, res) => {
       const cursor = toysCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
 
-    // Add new toy into database
-    app.post("/addToy", async (req, res) => {
-      const booking = req.body;
-      console.log(booking);
-      const result = await toysCollection.insertOne(booking);
+    // Search for toys by name
+    app.get("/toys/:text", async (req, res) => {
+      const text = req.params.text;
+      const result = await toysCollection
+        .find({
+          name: { $regex: text, $options: "i" },
+        })
+        .toArray();
       res.send(result);
     });
+
+    // Add a new toy to the database
+    app.post("/addToy", async (req, res) => {
+      const toy = req.body;
+      console.log(toy);
+      const result = await toysCollection.insertOne(toy);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -53,16 +69,17 @@ async function run() {
     // await client.close();
   }
 }
+
 run().catch(console.dir);
 
 // --------------------------------------------------------------
 
-// get data from server
+// Respond with a message for the root route
 app.get("/", (req, res) => {
   res.send("Toy Village is running");
 });
 
-//
+// Start the server
 app.listen(port, () => {
   console.log(`Toy Village Server is running on port ${port}`);
 });
