@@ -29,6 +29,13 @@ async function run() {
 
     const toysCollection = client.db("toyVillage").collection("allToys");
 
+    // Get all toys from database
+    app.get("/allToys", async (req, res) => {
+      const cursor = toysCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     // Add new toy into database
     app.post("/addToy", async (req, res) => {
       const booking = req.body;
