@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -29,10 +30,6 @@ async function run() {
 
     const toysCollection = client.db("toyVillage").collection("allToys");
 
-    const indexKeys = { name: 1 };
-    const indexOptions = { name: "name" };
-    const result = await toysCollection.createIndex(indexKeys, indexOptions);
-
     // Get all toys from the database
     app.get("/toys", async (req, res) => {
       const cursor = toysCollection.find();
@@ -48,6 +45,14 @@ async function run() {
           name: { $regex: text, $options: "i" },
         })
         .toArray();
+      res.send(result);
+    });
+
+    //   Get Single Toy Data by id
+    app.get("/toyDetails/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await toysCollection.findOne(query);
       res.send(result);
     });
 
