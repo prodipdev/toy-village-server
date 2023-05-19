@@ -67,8 +67,32 @@ async function run() {
     // Add a new toy to the database
     app.post("/addToy", async (req, res) => {
       const toy = req.body;
-      console.log(toy);
       const result = await toysCollection.insertOne(toy);
+      res.send(result);
+    });
+
+    // Update Toy Details
+    app.patch("/toyUpdate/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedToy = req.body;
+      console.log(updatedToy);
+      const updateDoc = {
+        $set: {
+          name: updatedToy.name,
+          photo: updatedToy.photo,
+          sellerMail: updatedToy.sellerMail,
+          category: updatedToy.category,
+          subCategory: updatedToy.subCategory,
+          price: updatedToy.price,
+          rating: updatedToy.rating,
+          availableQuantity: updatedToy.availableQuantity,
+          sellerName: updatedToy.sellerName,
+          detailsDescription: updatedToy.detailsDescription,
+        },
+      };
+
+      const result = await toysCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
