@@ -48,6 +48,14 @@ async function run() {
       res.send(result);
     });
 
+    // Get specific user toy collection
+    app.get("/myToys/:email", async (req, res) => {
+      const result = await toysCollection
+        .find({ sellerMail: req.params.email })
+        .toArray();
+      res.send(result);
+    });
+
     //   Get Single Toy Data by id
     app.get("/toyDetails/:id", async (req, res) => {
       const id = req.params.id;
