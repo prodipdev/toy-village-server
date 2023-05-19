@@ -55,6 +55,13 @@ async function run() {
         .toArray();
       res.send(result);
     });
+    // Get toy collection for specific category
+    app.get("/toyList/:category", async (req, res) => {
+      const result = await toysCollection
+        .find({ subCategory: req.params.category })
+        .toArray();
+      res.send(result);
+    });
 
     //   Get Single Toy Data by id
     app.get("/toyDetails/:id", async (req, res) => {
@@ -72,7 +79,7 @@ async function run() {
     });
 
     // Update Toy Details
-    app.patch("/toyUpdate/:id", async (req, res) => {
+    app.patch("/toyDetails/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedToy = req.body;
@@ -93,6 +100,14 @@ async function run() {
       };
 
       const result = await toysCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    // Delete Toy from database
+    app.delete("/toyDetails/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await toysCollection.deleteOne(query);
       res.send(result);
     });
 
