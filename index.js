@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const jwt = require("jsonwebtoken");
+// const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
@@ -25,23 +25,23 @@ const client = new MongoClient(uri, {
 });
 
 // Verify JWT token
-const verifyJWT = (req, res, next) => {
-  const authorization = req.headers.authorization;
-  if (!authorization) {
-    return res
-      .status(401)
-      .json({ error: true, message: "unauthorized access" });
-  }
-  const token = authorization.split(" ")[1];
+// const verifyJWT = (req, res, next) => {
+//   const authorization = req.headers.authorization;
+//   if (!authorization) {
+//     return res
+//       .status(401)
+//       .json({ error: true, message: "unauthorized access" });
+//   }
+//   const token = authorization.split(" ")[1];
 
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
-    if (error) {
-      res.status(401).json({ error: true, message: "unauthorized access" });
-    }
-    req.decoded = decoded;
-    next();
-  });
-};
+//   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
+//     if (error) {
+//       res.status(401).json({ error: true, message: "unauthorized access" });
+//     }
+//     req.decoded = decoded;
+//     next();
+//   });
+// };
 
 async function run() {
   try {
@@ -51,14 +51,14 @@ async function run() {
     const toysCollection = client.db("toyVillage").collection("allToys");
 
     // Send JWT Access token in Client Side
-    app.post("/jwt", (req, res) => {
-      const user = req.body;
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "1h",
-      });
+    // app.post("/jwt", (req, res) => {
+    //   const user = req.body;
+    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+    //     expiresIn: "1h",
+    //   });
 
-      res.json({ token });
-    });
+    //   res.json({ token });
+    // });
 
     // Get all toys from the database
     app.get("/toys", async (req, res) => {
@@ -80,17 +80,17 @@ async function run() {
     });
 
     // Get specific user toy collection which is depended on sorting
-    app.get("/myToys/:email", verifyJWT, async (req, res) => {
-      const decodedEmail = req.decoded.email;
+    app.get("/myToys/:email", async (req, res) => {
+      // const decodedEmail = req.decoded.email;
       const email = req.params.email;
       const sort = req.query.sort;
 
-      // check user email
-      if (decodedEmail !== email) {
-        return res
-          .status(403)
-          .json({ error: true, message: "forbidden access" });
-      }
+      // check user email for jwt
+      // if (decodedEmail !== email) {
+      //   return res
+      //     .status(403)
+      //     .json({ error: true, message: "forbidden access" });
+      // }
 
       let sortQuery = {};
       if (sort === "highest") {
@@ -117,7 +117,7 @@ async function run() {
     });
 
     //   Get Single Toy Data by id
-    app.get("/toyDetails/:id", verifyJWT, async (req, res) => {
+    app.get("/toyDetails/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await toysCollection.findOne(query);
@@ -125,7 +125,7 @@ async function run() {
     });
 
     // Add a new toy to the database
-    app.post("/addToy", verifyJWT, async (req, res) => {
+    app.post("/addToy", async (req, res) => {
       const toy = req.body;
       toy.createdAt = new Date();
       toy.price = Number(toy.price); // Convert price to a number
@@ -134,7 +134,7 @@ async function run() {
     });
 
     // Update Toy Details
-    app.patch("/toyUpdate/:id", verifyJWT, async (req, res) => {
+    app.patch("/toyUpdate/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedToy = req.body;
@@ -158,7 +158,7 @@ async function run() {
     });
 
     // Delete Toy from database
-    app.delete("/toyDetails/:id", verifyJWT, async (req, res) => {
+    app.delete("/toyDetails/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await toysCollection.deleteOne(query);
